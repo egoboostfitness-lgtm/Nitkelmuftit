@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nitkelmu Ftit Chat</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<style>
+body{font-family:Arial;margin:0;background:#faffff}
+header{background:#8888f8;color:white;padding:10px;text-align:center;}
+#container{display:flex;height:90vh;}
+#rooms{width:200px;background:#ddd;padding:10px;}
+.room{cursor:pointer;padding:5px;}
+#chatArea{flex:1;display:flex;flex-direction:column;}
+#chat{flex:1;overflow:auto;background:white;padding:10px;}
+.msg{border-bottom:1px solid #eee;padding:6px;}
+.controls{padding:10px;background:#fafafa;}
+input{padding:8px;margin:4px;}
+button{padding:8px;margin:2px;}
+img{max-width:150px;display:block;margin-top:5px;}
+video{width:200px;}
+#typing{font-size:12px;opacity:0.7;}
+#online{font-size:12px;opacity:0.8;margin-bottom:5px;}
+</style>
+</head>
+
+<body>
+
+<header>Nitkelmu Ftit chat</header>
+
+<div id="container">
+
+<div id="rooms">
+<b>Rooms</b>
+<div class="room" onclick="switchRoom('general')">General</div>
+<div class="room" onclick="switchRoom('Friends')">Friends</div>
+<div class="room" onclick="switchRoom('music')">Music</div>
+</div>
+
+<div id="chatArea">
+<div id="online"></div>
+<div id="chat"></div>
+<div id="typing"></div>
+
+<div class="controls">
+<button onclick="signIn()">Login with Google</button>
+<input id="message" placeholder="Message" disabled>
+<input id="privateUser" placeholder="Private to (optional)" disabled>
+<button onclick="send()" disabled>Send</button>
+<button onclick="emoji('😀')" disabled>😀</button>
+<button onclick="emoji('🔥')" disabled>🔥</button>
+<button onclick="emoji('😂')" disabled>😂</button>
+<button onclick="startCamera()" disabled>📷 Camera</button>
+</div>
+
+<video id="camera" autoplay></video>
+<button onclick="capture()" disabled>Capture</button>
+
+</div>
+</div>
+
+<script>
+const SUPABASE_URL="https://ajcxjjbwoyugiwsslknw.supabase.co";
+const SUPABASE_KEY="sb_publishable_nQNkzu7hFbQGEjRMJ5x1nw_Aes68OwI";
+
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+// encryption key
+const ENC_KEY="my-secret-key";
+
+let username=null;
+let room="general";
+let capturedImage=null;
+
+const chat=document.getElementById("chat");
+const typing=document.getElementById("typing");
+const onlineList=document.getElementById("online");
+
+function emoji(e){document.getElementById("message").value+=e;}
+function switchRoom(r){room=r;load();}
+async function checkBan(){
+if(!username) return;
+const {data}=await client.from("banned_users").select("*").eq("username",username);
+if(data.length>0){alert("You are banned."); throw new Error("banned");}
+}
+
+// Google login
+async function signIn(){
+const { data, error } = await client.auth.signInWithOAuth({ provider: 'google' });
+if(error){alert("Login failed"); return;}
+const { data:user } = await client.auth.getUser();
+username=user.user_metadata.full_name || user.email;
+document.querySelectorAll('input, button').forEach(e=>e.disabled=false);
+updatePresence();
+load();
+}
+
+// Online presence
+async function updatePresence(){
+if(!username) return;
+await client.from("online_users").upsert({username,last_seen:new Date()});
+}
+setInterval(updatePresence,10000);
+async function showOnline(){
+const {data}=await client.from("online_users").select("*");
+let onlineUsers=data.filter(u=>new Date()-new Date(u.last_seen)<30000).map(u=>u.username);
+onlineList.innerText="Online: "+onlineUsers.join(", ");
+}
+setInterval(showOnline,5000);
+
+// Load messages
+async function load(){
+const {data}=await client.from("messages").select("*").order("created_at",{ascending:true});
+chat.innerHTML="";
+data.forEach(m=>{
+if(m.room!==room) return;
+if(m.private_to && m.private_to!==username && m.username!==username) return;
+
+let text="";
+if(m.message) text=CryptoJS.AES.decrypt(m.message,ENC_KEY).toString(CryptoJS.enc.Utf8);
+
+let div=document.createElement("div");
+div.className="msg";
+div.innerHTML="<b>"+m.username+"</b>: "+text;
+
+if(m.image){
+let img=document.createElement("img");
+img.src=m.image;
+div.appendChild(img);
+}
+
+// admin controls
+if(username==="admin"){
+let ban=document.createElement("button");
+ban.innerText="ban";
+ban.onclick=()=>banUser(m.username);
+div.appendChild(ban);
+}
+
+chat.appendChild(div);
+});
+chat.scrollTop=chat.scrollHeight;
+}
+
+// Send message
+async function send(){
+const text=document.getElementById("message").value;
+const privateTo=document.getElementById("privateUser").value;
+if(!text && !capturedImage) return;
+
+const encrypted=CryptoJS.AES.encrypt(text,ENC_KEY).toString();
+
+await client.from("messages").insert([{
+username,
+message:encrypted,
+room,
+image:capturedImage,
+private_to:privateTo||null
+}]);
+
+capturedImage=null;
+document.getElementById("message").value="";
+document.getElementById("privateUser").value="";
+
+if("Notification" in window && Notification.permission==="granted"){
+new Notification("Message sent!");
+}else if("Notification" in window && Notification.permission!=="denied"){
+Notification.requestPermission();
+}
+}
+
+// Admin ban
+async function banUser(user){
+await client.from("banned_users").insert([{username:user}]);
+alert(user+" banned");
+}
+
+// Live subscription
+client.channel("chat")
+.on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>load())
+.subscribe();
+
+// Typing indicator
+document.getElementById("message").addEventListener("input",()=>{
+typing.innerText=username+" is typing...";
+setTimeout(()=>typing.innerText="",1500);
+});
+
+load();
+
+// Camera capture
+async function startCamera(){
+const stream=await navigator.mediaDevices.getUserMedia({video:true});
+document.getElementById("camera").srcObject=stream;
+document.querySelector("button[onclick='capture()']").disabled=false;
+}
+function capture(){
+const video=document.getElementById("camera");
+const canvas=document.createElement("canvas");
+canvas.width=200; canvas.height=150;
+const ctx=canvas.getContext("2d");
+ctx.drawImage(video,0,0,200,150);
+let data=canvas.toDataURL("image/jpeg",0.5);
+if(data.length>100000){alert("Image too large (max 100kb)"); return;}
+capturedImage=data;
+alert("Image captured");
+}
+
+</script>
+</body>
+</html>
