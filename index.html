@@ -78,25 +78,37 @@ const onlineList=document.getElementById("onlineList");
 const typingIndicator=document.getElementById("typing");
 
 // ----------------- Auth -----------------
-async function signUp(){
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
-  username=document.getElementById("username").value.trim();
-  if(!username){alert("Enter a username"); return;}
-  // Check uniqueness in your messages or auth table if necessary
-  const {data,error}=await client.auth.signUp({email,password});
-  if(error){alert(error.message); return;}
-  await client.auth.updateUser({data:{username}});
-  alert("Account created. Check your email for verification.");
+async function signUp() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const chosenUsername = document.getElementById("username").value.trim();
+  if (!chosenUsername) { alert("Enter a username"); return; }
+
+  // Check if username is taken
+  const { data: exists } = await client.from("profiles").select("*").eq("username", chosenUsername).single();
+  if (exists) { alert("Username taken"); return; }
+
+  const { data, error } = await client.auth.signUp({ email, password });
+  if (error) { alert(error.message); return; }
+
+  // Save username in profiles table
+  await client.from("profiles").insert({ email, username: chosenUsername });
+
+  alert("Account created. Check email verification.");
 }
 
-async function signIn(){
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
-  const {data,error}=await client.auth.signInWithPassword({email,password});
-  if(error){alert(error.message); return;}
-  user=data.user;
-  username=user.user_metadata.username||user.email;
+async function signIn() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error) { alert(error.message); return; }
+
+  user = data.user;
+
+  // Get username from profiles table
+  const { data: profile } = await client.from("profiles").select("*").eq("email", user.email).single();
+  username = profile?.username || user.email;
 
   secretKey = localStorage.getItem("chatSecretKey") || CryptoJS.lib.WordArray.random(16).toString();
   localStorage.setItem("chatSecretKey", secretKey);
@@ -165,13 +177,13 @@ async function sendMessage(){
   const spam=["http","www",".com",".ru",".xyz"];
   for(let w of spam) if(text.includes(w)){alert("Links not allowed"); return;}
   await client.from("messages").insert([{
-    username:user.email,
-    display_name:username,
-    message:encryptMessage(text),
-    room:room,
-    private_to:privateTo||null,
-    image: capturedImage?encryptMessage(capturedImage):null
-  }]);
+  username: user.email,         // the user's email
+  display_name: username,       // <- this is Step 4: ensures the username shows
+  message: encryptMessage(text),
+  room: room,
+  private_to: privateTo || null,
+  image: capturedImage ? encryptMessage(capturedImage) : null
+}]);
   capturedImage=null;
   document.getElementById("message").value="";
   document.getElementById("privateUser").value="";
