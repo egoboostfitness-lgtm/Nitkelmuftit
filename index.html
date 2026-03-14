@@ -206,14 +206,37 @@ function captureImage(){
 }
 
 // ----------------- Online Users -----------------
-async function updateOnline(){
-  await client.from("online_users").upsert({username,last_seen:new Date()});
-  const {data}=await client.from("online_users").select("*");
-  let list=data.filter(u=>new Date()-new Date(u.last_seen)<30000).map(u=>u.username);
-  onlineList.innerHTML=list.map(u=>`<div style="cursor:pointer;color:blue;" onclick="setPrivate('${u}')">${u}</div>`).join("");
+async function updateOnline() {
+
+  if(!username) return;
+
+  // update my presence
+  await client
+    .from("online_users")
+    .upsert({
+      username: username,
+      last_seen: new Date()
+    });
+
+  // fetch users
+  const { data } = await client
+    .from("online_users")
+    .select("*");
+
+  if(!data) return;
+
+  const now = new Date();
+
+  const activeUsers = data.filter(u =>
+    (now - new Date(u.last_seen)) < 30000
+  );
+
+  onlineList.innerHTML = activeUsers
+    .map(u =>
+      `<div style="cursor:pointer;color:blue" onclick="setPrivate('${u.username}')">${u.username}</div>`
+    )
+    .join("");
 }
-setInterval(updateOnline,5000);
-function setPrivate(user){document.getElementById("privateUser").value=user;}
 
 // ----------------- Typing Indicator -----------------
 document.getElementById("message").addEventListener("input",async()=>{
