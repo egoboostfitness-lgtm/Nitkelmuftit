@@ -381,23 +381,36 @@ data.forEach(renderMessage)
 
 }
 
+// ----------------- Online Users (FIXED) -----------------
+async function updateOnline() {
+    if (!username) return; // Only track logged-in users
 
-async function updateOnline(){
+    const now = new Date().toISOString();
 
-await client.from("online_users").upsert({
-username:username,
-last_seen:new Date()
-})
+    // Upsert current user with last_seen
+    await client.from("online_users").upsert(
+        { username: username, last_seen: now },
+        { onConflict: ["username"] } // Ensure it updates existing users
+    );
 
-const {data}=await client.from("online_users").select("*")
+    // Fetch all online users
+    const { data, error } = await client.from("online_users").select("*");
+    if (error || !data) return;
 
-const active=data.filter(u=>new Date()-new Date(u.last_seen)<30000)
+    // Filter active users (last 2 minutes)
+    const activeUsers = data.filter(u => (new Date() - new Date(u.last_seen)) < 2 * 60 * 1000);
 
-onlineList.innerHTML=active.map(u=>"<div onclick=\"setPrivate('"+u.username+"')\">"+u.username+"</div>").join("")
-
+    // Update sidebar
+    onlineList.innerHTML = activeUsers
+        .map(u => `<div style="cursor:pointer;" onclick="setPrivate('${u.username}')">${u.username}</div>`)
+        .join("");
 }
 
-setInterval(updateOnline,5000)
+// Call every 5 seconds
+setInterval(updateOnline, 5000);
+
+// Optional: immediately update after login
+updateOnline();
 
 
 function setPrivate(u){
