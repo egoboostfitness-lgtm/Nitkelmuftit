@@ -1,239 +1,447 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Secure E2E Chat</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <style>
-    body{font-family:Arial;margin:0;background:#f2f2f2;display:flex;flex-direction:column;height:100vh;}
-    header{background:#4a6cff;color:white;padding:10px;text-align:center;}
-    #container{display:flex;flex:1;}
-    #rooms{width:200px;background:#ddd;padding:10px;}
-    .room{cursor:pointer;padding:5px;}
-    #chatArea{flex:1;display:flex;flex-direction:column;}
-    #chat{flex:1;overflow:auto;background:white;padding:10px;}
-    #controls{padding:10px;background:#fafafa;}
-    input{padding:8px;margin:4px;}
-    button{padding:6px;margin:2px;}
-    img{max-width:150px;display:block;margin-top:5px;}
-    video{width:200px;}
-    #loginBox{padding:20px;text-align:center;}
-    #onlineSidebar{width:200px;background:#eee;padding:10px;overflow:auto;}
-    .msg{border-bottom:1px solid #eee;padding:6px;}
-    .admin{color:red;font-weight:bold;}
-    #typing{font-size:12px;opacity:0.7;margin-top:2px;}
-  </style>
+
+<meta charset="UTF-8">
+<title>Secure Pro Chat</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+height:100vh;
+display:flex;
+flex-direction:column;
+background:#f3f3f3
+}
+
+header{
+background:#4a6cff;
+color:white;
+padding:10px;
+text-align:center
+}
+
+#container{
+flex:1;
+display:flex
+}
+
+#rooms{
+width:160px;
+background:#ddd;
+padding:10px
+}
+
+.room{
+cursor:pointer;
+padding:6px
+}
+
+#chatArea{
+flex:1;
+display:flex;
+flex-direction:column
+}
+
+#chat{
+flex:1;
+overflow:auto;
+background:white;
+padding:10px
+}
+
+.msg{
+border-bottom:1px solid #eee;
+padding:6px
+}
+
+#controls{
+padding:10px;
+background:#fafafa
+}
+
+#loginBox{
+text-align:center;
+padding:30px
+}
+
+#onlineSidebar{
+width:180px;
+background:#eee;
+padding:10px
+}
+
+img{
+max-width:120px;
+margin-top:5px
+}
+
+button{
+margin:2px
+}
+
+#typing{
+font-size:12px;
+color:#666
+}
+
+</style>
+
 </head>
+
 <body>
 
-<header>E2E Secure Chat</header>
+<header>Secure Pro Chat</header>
 
 <div id="loginBox">
-  <h3>Login or Sign Up</h3>
 
-  <div id="loginForm">
-    <input id="loginUsername" placeholder="Username"><br>
-    <input id="loginPassword" type="password" placeholder="Password"><br>
-    <button id="loginBtn">Login</button>
-  </div>
+<h3>Sign Up</h3>
 
-  <hr>
+<input id="signupEmail" placeholder="Email"><br>
+<input id="signupUsername" placeholder="Username"><br>
+<input id="signupPassword" type="password" placeholder="Password"><br>
 
-  <div id="signupForm">
-    <input id="signupEmail" placeholder="Email"><br>
-    <input id="signupUsername" placeholder="Username"><br>
-    <input id="signupPassword" type="password" placeholder="Password"><br>
-    <button id="signupBtn">Sign Up</button>
-  </div>
+<button onclick="signUp()">Sign Up</button>
+
+<hr>
+
+<h3>Login</h3>
+
+<input id="loginUsername" placeholder="Username"><br>
+<input id="loginPassword" type="password" placeholder="Password"><br>
+
+<button onclick="login()">Login</button>
+
 </div>
+
 
 <div id="container" style="display:none">
-  <div id="rooms">
-    <b>Rooms</b>
-    <div class="room" onclick="switchRoom('general')">General</div>
-    <div class="room" onclick="switchRoom('gaming')">Gaming</div>
-    <div class="room" onclick="switchRoom('music')">Music</div>
-  </div>
 
-  <div id="chatArea">
-    <div id="chat"></div>
-    <div id="typing"></div>
-    <div id="controls">
-      <input id="message" placeholder="Message">
-      <input id="privateUser" placeholder="Private to (optional)">
-      <button onclick="sendMessage()">Send</button>
-      <button onclick="addEmoji('😀')">😀</button>
-      <button onclick="addEmoji('🔥')">🔥</button>
-      <button onclick="addEmoji('😂')">😂</button>
-      <button onclick="startCamera()">📷 Camera</button>
-    </div>
-    <video id="camera" autoplay></video>
-    <button onclick="capture()">Capture</button>
-  </div>
+<div id="rooms">
 
-  <div id="onlineSidebar">
-    <b>Online Users</b>
-    <div id="onlineList"></div>
-  </div>
+<b>Rooms</b>
+
+<div class="room" onclick="switchRoom('general')">General</div>
+<div class="room" onclick="switchRoom('tech')">Tech</div>
+<div class="room" onclick="switchRoom('gaming')">Gaming</div>
+
 </div>
 
+
+<div id="chatArea">
+
+<div id="chat"></div>
+
+<div id="typing"></div>
+
+<div id="controls">
+
+<input id="message" placeholder="Message">
+<input id="privateUser" placeholder="Private to">
+
+<button onclick="sendMessage()">Send</button>
+<button onclick="startCamera()">📷</button>
+
+</div>
+
+<video id="camera" autoplay width="200"></video>
+<button onclick="capturePhoto()">Capture</button>
+
+</div>
+
+
+<div id="onlineSidebar">
+
+<b>Online Users</b>
+<div id="onlineList"></div>
+
+</div>
+
+</div>
+
+
 <script>
+
 const SUPABASE_URL="https://ajcxjjbwoyugiwsslknw.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqY3hqamJ3b3l1Z2l3c3Nsa253Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0Mjc4NTYsImV4cCI6MjA4OTAwMzg1Nn0.jHYCwncqJf941ae-MNi1fEPgMcUiPW9iUPXRcdLsXU8";
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user=null, username="", room="general", capturedImage=null, lastMessageTime=0, isAdmin=false, secretKey=null;
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
-document.addEventListener("DOMContentLoaded", function() {
+let username=""
+let room="general"
+let lastSend=0
+let capturedImage=null
+let isAdmin=false
 
-  const chat = document.getElementById("chat");
-  const onlineList = document.getElementById("onlineList");
-  const typingIndicator = document.getElementById("typing");
+const chat=document.getElementById("chat")
+const typingBox=document.getElementById("typing")
+const onlineList=document.getElementById("onlineList")
 
-  // ----------------- Event Listeners -----------------
-  document.getElementById("signupBtn").addEventListener("click", signUp);
-  document.getElementById("loginBtn").addEventListener("click", login);
+let key=localStorage.getItem("chatKey")
 
-  // ----------------- Auth -----------------
-  async function signUp() {
-    const email = document.getElementById("signupEmail").value;
-    const password = document.getElementById("signupPassword").value;
-    username = document.getElementById("signupUsername").value.trim();
-    if(!email || !username || !password){alert("All fields required"); return;}
+if(!key){
+key=CryptoJS.lib.WordArray.random(16).toString()
+localStorage.setItem("chatKey",key)
+}
 
-    const {data, error} = await client.auth.signUp({email, password});
-    if(error){alert(error.message); return;}
+function encrypt(t){
+return CryptoJS.AES.encrypt(t,key).toString()
+}
 
-    await client.auth.updateUser({data:{username}});
-    alert("Account created. Check your email verification before logging in.");
-  }
+function decrypt(t){
+try{
+return CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8)
+}catch{
+return "[encrypted]"
+}
+}
 
-  async function login() {
-    username = document.getElementById("loginUsername").value.trim();
-    const password = document.getElementById("loginPassword").value;
-    if(!username || !password){alert("All fields required"); return;}
 
-    // Fetch user by username (you need a profiles table with username→email mapping)
-    const {data, error} = await client.from("profiles").select("email").eq("username", username).single();
-    if(error || !data){alert("Username not found"); return;}
+async function signUp(){
 
-    const {data:loginData, error:loginError} = await client.auth.signInWithPassword({
-      email: data.email,
-      password: password
-    });
-    if(loginError){alert(loginError.message); return;}
-    user = loginData.user;
+const email=document.getElementById("signupEmail").value
+const uname=document.getElementById("signupUsername").value
+const pass=document.getElementById("signupPassword").value
 
-    secretKey = localStorage.getItem("chatSecretKey") || CryptoJS.lib.WordArray.random(16).toString();
-    localStorage.setItem("chatSecretKey", secretKey);
-    await checkAdmin();
-    showChat();
-  }
+if(uname.length<3){alert("Username too short");return}
 
-  async function checkAdmin(){
-    const {data} = await client.from("admins").select("*").eq("email",user.email).single();
-    if(data) isAdmin=true;
-  }
+const {data:exists}=await client.from("profiles").select("*").eq("username",uname).single()
 
-  function showChat() {
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("container").style.display="flex";
-    loadMessages();
-    updateOnline();
-  }
+if(exists){alert("Username taken");return}
 
-  // ----------------- Chat -----------------
-  function addEmoji(e){document.getElementById("message").value+=e;}
-  function switchRoom(r){room=r;chat.innerHTML="";loadMessages();}
+const {error}=await client.auth.signUp({email,password:pass})
 
-  function encryptMessage(msg){return CryptoJS.AES.encrypt(msg, secretKey).toString();}
-  function decryptMessage(cipher){try{return CryptoJS.AES.decrypt(cipher, secretKey).toString(CryptoJS.enc.Utf8);}catch{return "[Encrypted]";}}
+if(error){alert(error.message);return}
 
-  function addMessage(m){
-    if(m.room!==room && m.private_to!==username && m.username!==user.email) return;
-    let div = document.createElement("div");
-    div.className="msg";
-    let text = decryptMessage(m.message);
-    let edited = m.edited?" (edited)":"";
-    div.innerHTML="<b>"+(m.display_name||m.username)+"</b>: "+text+edited;
+await client.from("profiles").insert({email:email,username:uname})
 
-    if(m.image){
-      let img=document.createElement("img");
-      img.src = decryptMessage(m.image);
-      div.appendChild(img);
-    }
+alert("Account created")
 
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-  }
+}
 
-  async function loadMessages(){
-    const {data} = await client.from("messages")
-      .select("*")
-      .order("created_at",{ascending:true})
-      .limit(50);
-    chat.innerHTML="";
-    if(data) data.forEach(addMessage);
-  }
 
-  async function sendMessage(){
-    let text = document.getElementById("message").value;
-    const privateTo = document.getElementById("privateUser").value;
-    const now = Date.now();
-    if(now-lastMessageTime<2000){alert("Slow down!"); return;}
-    lastMessageTime=now;
-    if(text.length>200){alert("Message too long"); return;}
-    const spam = ["http","www",".com",".ru",".xyz"];
-    for(let w of spam) if(text.includes(w)){alert("Links not allowed"); return;}
-    let cipher = encryptMessage(text);
-    let encryptedImage = capturedImage ? encryptMessage(capturedImage) : null;
-    await client.from("messages").insert([{username:user.email,display_name:username,message:cipher,room:room,private_to:privateTo||null,image:encryptedImage}]);
-    capturedImage=null;
-    document.getElementById("message").value="";
-    document.getElementById("privateUser").value="";
-  }
+async function login(){
 
-  // ----------------- Camera -----------------
-  async function startCamera(){
-    const stream = await navigator.mediaDevices.getUserMedia({video:true});
-    document.getElementById("camera").srcObject = stream;
-  }
+const uname=document.getElementById("loginUsername").value
+const pass=document.getElementById("loginPassword").value
 
-  function capture(){
-    const video=document.getElementById("camera");
-    const canvas=document.createElement("canvas");
-    canvas.width=200; canvas.height=150;
-    const ctx=canvas.getContext("2d");
-    ctx.drawImage(video,0,0,200,150);
-    let data=canvas.toDataURL("image/jpeg",0.5);
-    if(data.length>100000){alert("Image too large (max 100kb)"); return;}
-    capturedImage=data;
-    alert("Image captured");
-  }
+const {data:profile}=await client.from("profiles").select("*").eq("username",uname).single()
 
-  // ----------------- Online Users -----------------
-  async function updateOnline(){
-    if(!username) return;
-    await client.from("online_users").upsert({username,last_seen:new Date().toISOString()});
-    const {data} = await client.from("online_users").select("*");
-    if(!data) return;
-    const activeUsers = data.filter(u=>Date.now() - new Date(u.last_seen).getTime() < 120000);
-    onlineList.innerHTML = activeUsers.map(u=>`<div>${u.username}</div>`).join("");
-  }
-  setInterval(updateOnline,5000);
+if(!profile){alert("User not found");return}
 
-  // ----------------- Typing Indicator -----------------
-  document.getElementById("message").addEventListener("input", async () => {
-    await client.from("typing").upsert({username, room, timestamp:new Date()});
-  });
+const {data,error}=await client.auth.signInWithPassword({
+email:profile.email,
+password:pass
+})
 
-  client.channel("public:messages")
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
-      addMessage(payload.new);
-    })
-    .subscribe();
+if(error){alert(error.message);return}
 
-});
+username=profile.username
+
+const {data:adminCheck}=await client.from("admins").select("*").eq("username",username).single()
+
+if(adminCheck) isAdmin=true
+
+document.getElementById("loginBox").style.display="none"
+document.getElementById("container").style.display="flex"
+
+loadMessages()
+updateOnline()
+
+}
+
+
+function switchRoom(r){
+room=r
+chat.innerHTML=""
+loadMessages()
+}
+
+
+function renderMessage(m){
+
+if(m.room!==room && m.private_to!==username && m.username!==username) return
+
+const div=document.createElement("div")
+div.className="msg"
+
+let text=decrypt(m.message)
+
+div.innerHTML="<b>"+m.username+"</b>: "+text+(m.edited?" (edited)":" ")
+
+const report=document.createElement("button")
+report.innerText="Report"
+report.onclick=()=>reportUser(m.username,text)
+div.appendChild(report)
+
+if(m.username===username || isAdmin){
+
+const del=document.createElement("button")
+del.innerText="Delete"
+del.onclick=()=>deleteMsg(m.id)
+div.appendChild(del)
+
+}
+
+if(isAdmin){
+
+const ban=document.createElement("button")
+ban.innerText="Ban"
+ban.onclick=()=>banUser(m.username)
+div.appendChild(ban)
+
+}
+
+if(m.image){
+
+const img=document.createElement("img")
+img.src=decrypt(m.image)
+div.appendChild(img)
+
+}
+
+chat.appendChild(div)
+chat.scrollTop=chat.scrollHeight
+
+}
+
+
+async function sendMessage(){
+
+const text=document.getElementById("message").value
+const privateTo=document.getElementById("privateUser").value
+
+if(text.length>300){alert("Message too long");return}
+
+if(text.includes("http")){alert("Links not allowed");return}
+
+const now=Date.now()
+
+if(now-lastSend<2000){alert("Slow down");return}
+
+lastSend=now
+
+await client.from("messages").insert({
+username:username,
+message:encrypt(text),
+image:capturedImage?encrypt(capturedImage):null,
+room:room,
+private_to:privateTo||null
+})
+
+capturedImage=null
+document.getElementById("message").value=""
+
+}
+
+
+async function deleteMsg(id){
+await client.from("messages").delete().eq("id",id)
+}
+
+
+async function reportUser(user,msg){
+
+const reason=prompt("Reason")
+
+await client.from("abuse_reports").insert({
+reporter:username,
+reported_user:user,
+message:msg,
+reason:reason
+})
+
+alert("Reported")
+
+}
+
+
+async function banUser(u){
+await client.from("banned_users").insert({username:u})
+alert("User banned")
+}
+
+
+async function loadMessages(){
+
+const {data}=await client.from("messages")
+.select("*")
+.eq("room",room)
+.order("created_at",{ascending:true})
+.limit(50)
+
+chat.innerHTML=""
+data.forEach(renderMessage)
+
+}
+
+
+async function updateOnline(){
+
+await client.from("online_users").upsert({
+username:username,
+last_seen:new Date()
+})
+
+const {data}=await client.from("online_users").select("*")
+
+const active=data.filter(u=>new Date()-new Date(u.last_seen)<30000)
+
+onlineList.innerHTML=active.map(u=>"<div onclick=\"setPrivate('"+u.username+"')\">"+u.username+"</div>").join("")
+
+}
+
+setInterval(updateOnline,5000)
+
+
+function setPrivate(u){
+document.getElementById("privateUser").value=u
+}
+
+
+async function startCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true})
+document.getElementById("camera").srcObject=stream
+
+}
+
+
+function capturePhoto(){
+
+const video=document.getElementById("camera")
+const canvas=document.createElement("canvas")
+
+canvas.width=200
+canvas.height=150
+
+canvas.getContext("2d").drawImage(video,0,0)
+
+const data=canvas.toDataURL("image/jpeg",0.5)
+
+if(data.length>100000){
+alert("Image too large")
+return
+}
+
+capturedImage=data
+
+}
+
+
+client.channel("messages")
+.on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+renderMessage(payload.new)
+})
+.subscribe()
+
 </script>
+
 </body>
 </html>
