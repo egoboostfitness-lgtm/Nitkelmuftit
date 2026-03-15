@@ -156,14 +156,14 @@ color:#666
 </div>
 
 
-<div id="onlineSidebar">
+// <div id="onlineSidebar">
 
-<b>Online Users</b>
-<div id="onlineList"></div>
+// <b>Online Users</b>
+// <div id="onlineList"></div>
 
-</div>
+// </div>
 
-</div>
+// </div>
 
 
 <script>
@@ -183,7 +183,7 @@ const chat=document.getElementById("chat")
 const typingBox=document.getElementById("typing")
 const onlineList=document.getElementById("onlineList")
 
-const onlineList = document.getElementById("onlineList");
+// const onlineList = document.getElementById("onlineList");
 
 let key=localStorage.getItem("chatKey")
 
@@ -458,6 +458,19 @@ renderMessage(payload.new)
 })
 .subscribe()
 
+  </script>
+
+  <div id="onlineSidebar">
+    <b>Online Users</b>
+    <div id="onlineList"></div>
+  </div>
+
+  <script>
+    const onlineList = document.getElementById("onlineList");
+    onlineList.innerHTML = "TEST USER"; // should appear now
+  </script>
+</body>
+  
 </script>
 
 </body>
