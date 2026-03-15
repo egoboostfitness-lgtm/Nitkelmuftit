@@ -1,256 +1,447 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Nitkelmu Ftit Chat</title>
+
+<meta charset="UTF-8">
+<title>Secure Pro Chat</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 <style>
-body{font-family:Arial;margin:0;background:#f2f2f2;display:flex;flex-direction:column;height:100vh;}
-header{background:#4a6cff;color:white;padding:10px;text-align:center;}
-#container{display:flex;flex:1;}
-#rooms{width:200px;background:#ddd;padding:10px;}
-.room{cursor:pointer;padding:5px;}
-#chatArea{flex:1;display:flex;flex-direction:column;}
-#chat{flex:1;overflow:auto;background:white;padding:10px;}
-#controls{padding:10px;background:#fafafa;}
-input{padding:8px;margin:4px;}
-button{padding:6px;margin:2px;}
-img{max-width:150px;display:block;margin-top:5px;}
-video{width:200px;}
-#loginBox{padding:20px;text-align:center;}
-#onlineSidebar{width:200px;background:#eee;padding:10px;overflow:auto;}
-.msg{border-bottom:1px solid #eee;padding:6px;}
-.admin{color:red;font-weight:bold;}
-#typing{font-size:12px;opacity:0.7;margin-top:2px;}
+
+body{
+font-family:Arial;
+margin:0;
+height:100vh;
+display:flex;
+flex-direction:column;
+background:#f3f3f3
+}
+
+header{
+background:#4a6cff;
+color:white;
+padding:10px;
+text-align:center
+}
+
+#container{
+flex:1;
+display:flex
+}
+
+#rooms{
+width:160px;
+background:#ddd;
+padding:10px
+}
+
+.room{
+cursor:pointer;
+padding:6px
+}
+
+#chatArea{
+flex:1;
+display:flex;
+flex-direction:column
+}
+
+#chat{
+flex:1;
+overflow:auto;
+background:white;
+padding:10px
+}
+
+.msg{
+border-bottom:1px solid #eee;
+padding:6px
+}
+
+#controls{
+padding:10px;
+background:#fafafa
+}
+
+#loginBox{
+text-align:center;
+padding:30px
+}
+
+#onlineSidebar{
+width:180px;
+background:#eee;
+padding:10px
+}
+
+img{
+max-width:120px;
+margin-top:5px
+}
+
+button{
+margin:2px
+}
+
+#typing{
+font-size:12px;
+color:#666
+}
+
 </style>
+
 </head>
+
 <body>
 
-<header>E2E Secure Chat</header>
+<header>Secure Pro Chat</header>
 
 <div id="loginBox">
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<input id="username" placeholder="Choose unique username"><br>
+
+<h3>Sign Up</h3>
+
+<input id="signupEmail" placeholder="Email"><br>
+<input id="signupUsername" placeholder="Username"><br>
+<input id="signupPassword" type="password" placeholder="Password"><br>
+
 <button onclick="signUp()">Sign Up</button>
-<button onclick="signIn()">Login</button><br><br>
-<button onclick="facebookLogin()">Login with Facebook</button>
+
+<hr>
+
+<h3>Login</h3>
+
+<input id="loginUsername" placeholder="Username"><br>
+<input id="loginPassword" type="password" placeholder="Password"><br>
+
+<button onclick="login()">Login</button>
+
 </div>
+
 
 <div id="container" style="display:none">
+
 <div id="rooms">
+
 <b>Rooms</b>
+
 <div class="room" onclick="switchRoom('general')">General</div>
+<div class="room" onclick="switchRoom('tech')">Tech</div>
 <div class="room" onclick="switchRoom('gaming')">Gaming</div>
-<div class="room" onclick="switchRoom('music')">Music</div>
+
 </div>
+
 
 <div id="chatArea">
+
 <div id="chat"></div>
+
 <div id="typing"></div>
+
 <div id="controls">
+
 <input id="message" placeholder="Message">
-<input id="privateUser" placeholder="Private to (optional)">
+<input id="privateUser" placeholder="Private to">
+
 <button onclick="sendMessage()">Send</button>
-<button onclick="addEmoji('😀')">😀</button>
-<button onclick="addEmoji('🔥')">🔥</button>
-<button onclick="addEmoji('😂')">😂</button>
-<button onclick="startCamera()">📷 Camera</button>
+<button onclick="startCamera()">📷</button>
+
 </div>
-<video id="camera" autoplay></video>
-<button onclick="captureImage()">Capture</button>
+
+<video id="camera" autoplay width="200"></video>
+<button onclick="capturePhoto()">Capture</button>
+
 </div>
+
 
 <div id="onlineSidebar">
+
 <b>Online Users</b>
 <div id="onlineList"></div>
+
 </div>
+
 </div>
+
 
 <script>
-const SUPABASE_URL="https://ajcxjjbwoyugiwsslknw.supabase.co";
-const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqY3hqamJ3b3l1Z2l3c3Nsa253Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0Mjc4NTYsImV4cCI6MjA4OTAwMzg1Nn0.jHYCwncqJf941ae-MNi1fEPgMcUiPW9iUPXRcdLsXU8";
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user=null, username="", room="general", capturedImage=null, lastMessageTime=0, isAdmin=false, secretKey=null;
-const chat=document.getElementById("chat");
-const onlineList=document.getElementById("onlineList");
-const typingIndicator=document.getElementById("typing");
+const SUPABASE_URL="YOUR_SUPABASE_URL"
+const SUPABASE_KEY="YOUR_SUPABASE_ANON_KEY"
 
-// ----------------- Auth -----------------
-async function signUp() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const chosenUsername = document.getElementById("username").value.trim();
-  if (!chosenUsername) { alert("Enter a username"); return; }
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
-  // Check if username is taken
-  const { data: exists } = await client.from("profiles").select("*").eq("username", chosenUsername).single();
-  if (exists) { alert("Username taken"); return; }
+let username=""
+let room="general"
+let lastSend=0
+let capturedImage=null
+let isAdmin=false
 
-  const { data, error } = await client.auth.signUp({ email, password });
-  if (error) { alert(error.message); return; }
+const chat=document.getElementById("chat")
+const typingBox=document.getElementById("typing")
+const onlineList=document.getElementById("onlineList")
 
-  // Save username in profiles table
-  await client.from("profiles").insert({ email, username: chosenUsername });
+let key=localStorage.getItem("chatKey")
 
-  alert("Account created. Check email verification.");
+if(!key){
+key=CryptoJS.lib.WordArray.random(16).toString()
+localStorage.setItem("chatKey",key)
 }
 
-async function signIn() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const { data, error } = await client.auth.signInWithPassword({ email, password });
-  if (error) { alert(error.message); return; }
-
-  user = data.user;
-
-  // Get username from profiles table
-  const { data: profile } = await client.from("profiles").select("*").eq("email", user.email).single();
-  username = profile?.username || user.email;
-
-  secretKey = localStorage.getItem("chatSecretKey") || CryptoJS.lib.WordArray.random(16).toString();
-  localStorage.setItem("chatSecretKey", secretKey);
-
-  await checkAdmin();
-  showChat();
+function encrypt(t){
+return CryptoJS.AES.encrypt(t,key).toString()
 }
 
-async function facebookLogin(){await client.auth.signInWithOAuth({provider:'facebook'});}
-async function checkAdmin(){
-  const {data}=await client.from("admins").select("*").eq("email",user.email).single();
-  if(data) isAdmin=true;
+function decrypt(t){
+try{
+return CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8)
+}catch{
+return "[encrypted]"
+}
 }
 
-function showChat(){
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("container").style.display="flex";
-  loadMessages();
-  updateOnline();
+
+async function signUp(){
+
+const email=document.getElementById("signupEmail").value
+const uname=document.getElementById("signupUsername").value
+const pass=document.getElementById("signupPassword").value
+
+if(uname.length<3){alert("Username too short");return}
+
+const {data:exists}=await client.from("profiles").select("*").eq("username",uname).single()
+
+if(exists){alert("Username taken");return}
+
+const {error}=await client.auth.signUp({email,password:pass})
+
+if(error){alert(error.message);return}
+
+await client.from("profiles").insert({email:email,username:uname})
+
+alert("Account created")
+
 }
 
-// ----------------- Chat -----------------
-function addEmoji(e){document.getElementById("message").value+=e;}
-function switchRoom(r){room=r;chat.innerHTML="";loadMessages();}
-function encryptMessage(msg){return CryptoJS.AES.encrypt(msg, secretKey).toString();}
-function decryptMessage(cipher){try{return CryptoJS.AES.decrypt(cipher, secretKey).toString(CryptoJS.enc.Utf8);}catch{return "[Encrypted]";}}
 
-function addMessage(m){
-  if(m.room!==room && m.private_to!==username && m.username!==user.email) return;
-  let div=document.createElement("div");
-  div.className="msg";
-  let text=decryptMessage(m.message);
-  div.innerHTML="<b>"+(m.display_name||m.username)+"</b>: "+text+(m.edited?" (edited)":"");
+async function login(){
 
-  if(m.image){
-    let img=document.createElement("img");
-    img.src=decryptMessage(m.image);
-    div.appendChild(img);
-    let reportBtn=document.createElement("button");
-    reportBtn.innerText="Report Abuse";
-    reportBtn.onclick=()=>reportAbuse(m.id,m.username);
-    div.appendChild(reportBtn);
-  }
+const uname=document.getElementById("loginUsername").value
+const pass=document.getElementById("loginPassword").value
 
-  chat.appendChild(div);
-  chat.scrollTop=chat.scrollHeight;
+const {data:profile}=await client.from("profiles").select("*").eq("username",uname).single()
+
+if(!profile){alert("User not found");return}
+
+const {data,error}=await client.auth.signInWithPassword({
+email:profile.email,
+password:pass
+})
+
+if(error){alert(error.message);return}
+
+username=profile.username
+
+const {data:adminCheck}=await client.from("admins").select("*").eq("username",username).single()
+
+if(adminCheck) isAdmin=true
+
+document.getElementById("loginBox").style.display="none"
+document.getElementById("container").style.display="flex"
+
+loadMessages()
+updateOnline()
+
 }
 
-// ----------------- Load & Send -----------------
-async function loadMessages(){
-  const {data}=await client.from("messages")
-    .select("*")
-    .or(`room.eq.${room},private_to.eq.${username},username.eq.${user.email}`)
-    .order("created_at",{ascending:true}).limit(50);
-  chat.innerHTML="";
-  if(data)data.forEach(addMessage);
+
+function switchRoom(r){
+room=r
+chat.innerHTML=""
+loadMessages()
 }
+
+
+function renderMessage(m){
+
+if(m.room!==room && m.private_to!==username && m.username!==username) return
+
+const div=document.createElement("div")
+div.className="msg"
+
+let text=decrypt(m.message)
+
+div.innerHTML="<b>"+m.username+"</b>: "+text+(m.edited?" (edited)":" ")
+
+const report=document.createElement("button")
+report.innerText="Report"
+report.onclick=()=>reportUser(m.username,text)
+div.appendChild(report)
+
+if(m.username===username || isAdmin){
+
+const del=document.createElement("button")
+del.innerText="Delete"
+del.onclick=()=>deleteMsg(m.id)
+div.appendChild(del)
+
+}
+
+if(isAdmin){
+
+const ban=document.createElement("button")
+ban.innerText="Ban"
+ban.onclick=()=>banUser(m.username)
+div.appendChild(ban)
+
+}
+
+if(m.image){
+
+const img=document.createElement("img")
+img.src=decrypt(m.image)
+div.appendChild(img)
+
+}
+
+chat.appendChild(div)
+chat.scrollTop=chat.scrollHeight
+
+}
+
 
 async function sendMessage(){
-  const text=document.getElementById("message").value;
-  const privateTo=document.getElementById("privateUser").value;
-  const now=Date.now();
-  if(now-lastMessageTime<2000){alert("Slow down!"); return;}
-  lastMessageTime=now;
-  if(text.length>200){alert("Message too long"); return;}
-  const spam=["http","www",".com",".ru",".xyz"];
-  for(let w of spam) if(text.includes(w)){alert("Links not allowed"); return;}
-  await client.from("messages").insert([{
-  username: user.email,         // the user's email
-  display_name: username,       // <- this is Step 4: ensures the username shows
-  message: encryptMessage(text),
-  room: room,
-  private_to: privateTo || null,
-  image: capturedImage ? encryptMessage(capturedImage) : null
-}]);
-  capturedImage=null;
-  document.getElementById("message").value="";
-  document.getElementById("privateUser").value="";
+
+const text=document.getElementById("message").value
+const privateTo=document.getElementById("privateUser").value
+
+if(text.length>300){alert("Message too long");return}
+
+if(text.includes("http")){alert("Links not allowed");return}
+
+const now=Date.now()
+
+if(now-lastSend<2000){alert("Slow down");return}
+
+lastSend=now
+
+await client.from("messages").insert({
+username:username,
+message:encrypt(text),
+image:capturedImage?encrypt(capturedImage):null,
+room:room,
+private_to:privateTo||null
+})
+
+capturedImage=null
+document.getElementById("message").value=""
+
 }
 
-// ----------------- Camera -----------------
+
+async function deleteMsg(id){
+await client.from("messages").delete().eq("id",id)
+}
+
+
+async function reportUser(user,msg){
+
+const reason=prompt("Reason")
+
+await client.from("abuse_reports").insert({
+reporter:username,
+reported_user:user,
+message:msg,
+reason:reason
+})
+
+alert("Reported")
+
+}
+
+
+async function banUser(u){
+await client.from("banned_users").insert({username:u})
+alert("User banned")
+}
+
+
+async function loadMessages(){
+
+const {data}=await client.from("messages")
+.select("*")
+.eq("room",room)
+.order("created_at",{ascending:true})
+.limit(50)
+
+chat.innerHTML=""
+data.forEach(renderMessage)
+
+}
+
+
+async function updateOnline(){
+
+await client.from("online_users").upsert({
+username:username,
+last_seen:new Date()
+})
+
+const {data}=await client.from("online_users").select("*")
+
+const active=data.filter(u=>new Date()-new Date(u.last_seen)<30000)
+
+onlineList.innerHTML=active.map(u=>"<div onclick=\"setPrivate('"+u.username+"')\">"+u.username+"</div>").join("")
+
+}
+
+setInterval(updateOnline,5000)
+
+
+function setPrivate(u){
+document.getElementById("privateUser").value=u
+}
+
+
 async function startCamera(){
-  const stream=await navigator.mediaDevices.getUserMedia({video:true});
-  document.getElementById("camera").srcObject=stream;
-}
-function captureImage(){
-  const video=document.getElementById("camera");
-  const canvas=document.createElement("canvas");
-  canvas.width=200; canvas.height=150;
-  canvas.getContext("2d").drawImage(video,0,0,200,150);
-  const data=canvas.toDataURL("image/jpeg",0.5);
-  if(data.length>100000){alert("Image too large"); return;}
-  capturedImage=data;
-  alert("Image captured");
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true})
+document.getElementById("camera").srcObject=stream
+
 }
 
-// ----------------- Online Users -----------------
-async function updateOnline() {
 
-  if(!username) return;
+function capturePhoto(){
 
-  // update my presence
-  await client
-    .from("online_users")
-    .upsert({
-      username: username,
-      last_seen: new Date()
-    });
+const video=document.getElementById("camera")
+const canvas=document.createElement("canvas")
 
-  // fetch users
-  const { data } = await client
-    .from("online_users")
-    .select("*");
+canvas.width=200
+canvas.height=150
 
-  if(!data) return;
+canvas.getContext("2d").drawImage(video,0,0)
 
-  const now = new Date();
+const data=canvas.toDataURL("image/jpeg",0.5)
 
-  const activeUsers = data.filter(u =>
-    (now - new Date(u.last_seen)) < 30000
-  );
-
-  onlineList.innerHTML = activeUsers
-    .map(u =>
-      `<div style="cursor:pointer;color:blue" onclick="setPrivate('${u.username}')">${u.username}</div>`
-    )
-    .join("");
+if(data.length>100000){
+alert("Image too large")
+return
 }
 
-// ----------------- Typing Indicator -----------------
-document.getElementById("message").addEventListener("input",async()=>{
-  await client.from("typing").upsert({username,room,timestamp:new Date()});
-});
+capturedImage=data
 
-// ----------------- Realtime -----------------
-client.channel("public:messages")
-  .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
-    const m=payload.new;
-    if(m.room===room || m.private_to===username || m.username===user.email)addMessage(m);
-  })
-  .subscribe();
+}
+
+
+client.channel("messages")
+.on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+renderMessage(payload.new)
+})
+.subscribe()
 
 </script>
+
 </body>
 </html>
