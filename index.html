@@ -386,26 +386,31 @@ async function updateOnline(){
 
 if(!username) return
 
+// update current user
 await client
 .from("online_users")
 .upsert({
 username: username,
-last_seen: new Date()
+last_seen: new Date().toISOString()
 })
 
-const {data} = await client
+// get users
+const {data,error} = await client
 .from("online_users")
 .select("*")
 
-const activeUsers = data.filter(
-u => Date.now() - new Date(u.last_seen) < 30000
-)
+if(error) return
 
+// show users active within 2 minutes
+const activeUsers = data.filter(u=>{
+return Date.now() - new Date(u.last_seen).getTime() < 120000
+})
+
+// render sidebar
 onlineList.innerHTML = activeUsers
 .map(u => `<div>${u.username}</div>`)
 .join("")
 }
-
 
 setInterval(updateOnline,5000)
 
