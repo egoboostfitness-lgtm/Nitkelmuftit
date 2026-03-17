@@ -2,77 +2,155 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Secure Pro Chat</title>
+<title>Chat App</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 <style>
-body{font-family:Arial;margin:0;height:100vh;display:flex;flex-direction:column;background:#f3f3f3}
-header{background:#4a6cff;color:white;padding:10px;text-align:center}
-#container{flex:1;display:flex}
-#rooms{width:160px;background:#ddd;padding:10px}
-.room{cursor:pointer;padding:6px}
-#chatArea{flex:1;display:flex;flex-direction:column}
-#chat{flex:1;overflow:auto;background:white;padding:10px}
-.msg{border-bottom:1px solid #eee;padding:6px}
-#controls{padding:10px;background:#fafafa}
-#loginBox{text-align:center;padding:30px}
-#onlineSidebar{width:180px;background:#eee;padding:10px}
-img{max-width:120px;margin-top:5px}
-button{margin:2px}
-#typing{font-size:12px;color:#666}
+body{
+margin:0;
+font-family:Arial;
+background:#ece5dd;
+height:100vh;
+display:flex;
+flex-direction:column;
+}
+
+/* HEADER */
+header{
+background:#075e54;
+color:white;
+padding:12px;
+font-size:18px;
+}
+
+/* MAIN LAYOUT */
+#container{
+flex:1;
+display:flex;
+}
+
+/* SIDEBAR */
+#onlineSidebar{
+width:220px;
+background:#fff;
+border-right:1px solid #ddd;
+overflow:auto;
+}
+
+.user{
+padding:10px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+}
+.user:hover{background:#f5f5f5}
+
+/* CHAT AREA */
+#chatArea{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+#chat{
+flex:1;
+overflow:auto;
+padding:10px;
+display:flex;
+flex-direction:column;
+}
+
+/* MESSAGE BUBBLES */
+.msg{
+max-width:60%;
+padding:8px 10px;
+margin:5px;
+border-radius:10px;
+font-size:14px;
+}
+
+.me{
+background:#dcf8c6;
+align-self:flex-end;
+}
+
+.other{
+background:#fff;
+align-self:flex-start;
+}
+
+/* INPUT BAR */
+#controls{
+display:flex;
+padding:10px;
+background:#f0f0f0;
+}
+
+#message{
+flex:1;
+padding:10px;
+border-radius:20px;
+border:1px solid #ccc;
+outline:none;
+}
+
+button{
+margin-left:5px;
+padding:8px 12px;
+border:none;
+background:#075e54;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+/* LOGIN */
+#loginBox{
+padding:30px;
+text-align:center;
+}
+
 </style>
 </head>
 
 <body>
 
-<header>Secure Pro Chat</header>
+<header id="chatHeader">Secure Chat</header>
 
 <div id="loginBox">
 
 <h3>Sign Up</h3>
-<input id="signupEmail" placeholder="Email"><br>
-<input id="signupUsername" placeholder="Username"><br>
-<input id="signupPassword" type="password" placeholder="Password"><br>
+<input id="signupEmail" placeholder="Email"><br><br>
+<input id="signupUsername" placeholder="Username"><br><br>
+<input id="signupPassword" type="password" placeholder="Password"><br><br>
 <button onclick="signUp()">Sign Up</button>
 
 <hr>
 
 <h3>Login</h3>
-<input id="loginUsername" placeholder="Username"><br>
-<input id="loginPassword" type="password" placeholder="Password"><br>
+<input id="loginUsername" placeholder="Username"><br><br>
+<input id="loginPassword" type="password" placeholder="Password"><br><br>
 <button onclick="login()">Login</button>
 
 </div>
 
 <div id="container" style="display:none">
 
-<div id="rooms">
-<b>Rooms</b>
-<div class="room" onclick="switchRoom('general')">General</div>
-<div class="room" onclick="switchRoom('tech')">Tech</div>
-<div class="room" onclick="switchRoom('gaming')">Gaming</div>
+<!-- USERS -->
+<div id="onlineSidebar">
+<div class="user" onclick="switchRoom('general')"># General</div>
+<div id="onlineList"></div>
 </div>
 
+<!-- CHAT -->
 <div id="chatArea">
 <div id="chat"></div>
-<div id="typing"></div>
 
 <div id="controls">
-<input id="message" placeholder="Message">
-<input id="privateUser" placeholder="Private to">
+<input id="message" placeholder="Type a message">
 <button onclick="sendMessage()">Send</button>
-<button onclick="startCamera()">📷</button>
 </div>
-
-<video id="camera" autoplay width="200"></video>
-<button onclick="capturePhoto()">Capture</button>
-</div>
-
-<div id="onlineSidebar">
-<b>Online Users</b>
-<div id="onlineList"></div>
 </div>
 
 </div>
@@ -82,81 +160,59 @@ const SUPABASE_URL="https://ajcxjjbwoyugiwsslknw.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqY3hqamJ3b3l1Z2l3c3Nsa253Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0Mjc4NTYsImV4cCI6MjA4OTAwMzg1Nn0.jHYCwncqJf941ae-MNi1fEPgMcUiPW9iUPXRcdLsXU8";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// ✅ FIXED SHARED KEY (IMPORTANT)
 let key="global-secret-key-123";
-
 let username="";
 let room="general";
-let lastSend=0;
-let capturedImage=null;
-let isAdmin=false;
 let privateChatUser=null;
 let channel=null;
 
 const chat=document.getElementById("chat");
 const onlineList=document.getElementById("onlineList");
 
-// ---------------- ENCRYPT ----------------
+/* ENCRYPT */
 function encrypt(t){return CryptoJS.AES.encrypt(t,key).toString();}
 function decrypt(t){
-try{
-const r=CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8);
-return r||"[Unable to decrypt]";
-}catch{return "[Encrypted]";}
+try{return CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8)||"[error]";}
+catch{return "[encrypted]";}
 }
 
-// ---------------- SIGN UP ----------------
+/* SIGN UP */
 async function signUp(){
-const email=document.getElementById("signupEmail").value;
-const uname=document.getElementById("signupUsername").value;
-const pass=document.getElementById("signupPassword").value;
+const email=signupEmail.value;
+const uname=signupUsername.value;
+const pass=signupPassword.value;
 
-const {data:exists}=await client.from("profiles").select("*").eq("username",uname).single();
-if(exists){alert("Username taken");return;}
-
-const {error}=await client.auth.signUp({email,password:pass});
-if(error){alert(error.message);return;}
-
+await client.auth.signUp({email,password:pass});
 await client.from("profiles").insert({email,username:uname});
 alert("Account created");
 }
 
-// ---------------- LOGIN ----------------
+/* LOGIN */
 async function login(){
-const uname=document.getElementById("loginUsername").value;
-const pass=document.getElementById("loginPassword").value;
+
+const uname=loginUsername.value;
+const pass=loginPassword.value;
 
 const {data:profile}=await client.from("profiles").select("*").eq("username",uname).single();
-if(!profile){alert("User not found");return;}
 
 const {error}=await client.auth.signInWithPassword({
 email:profile.email,
 password:pass
 });
+
 if(error){alert(error.message);return;}
 
-username=profile.username;
+username=uname;
 
-const {data:adminCheck}=await client.from("admins").select("*").eq("username",username).single();
-if(adminCheck) isAdmin=true;
-
-document.getElementById("loginBox").style.display="none";
-document.getElementById("container").style.display="flex";
+loginBox.style.display="none";
+container.style.display="flex";
 
 loadMessages();
 updateOnline();
 subscribeMessages();
 }
 
-// ---------------- ROOMS ----------------
-function switchRoom(r){
-room=r;
-privateChatUser=null;
-chat.innerHTML="";
-loadMessages();
-}
-
-// ---------------- RENDER ----------------
+/* RENDER */
 function renderMessage(m){
 
 if(privateChatUser){
@@ -169,38 +225,19 @@ if(m.room!==room || m.private_to) return;
 }
 
 const div=document.createElement("div");
-div.className="msg";
 
-div.innerHTML="<b>"+m.username+"</b>: "+decrypt(m.message);
+div.className="msg "+(m.username===username?"me":"other");
 
-if(m.username===username || isAdmin){
-let del=document.createElement("button");
-del.innerText="Delete";
-del.onclick=()=>deleteMsg(m.id);
-div.appendChild(del);
-}
-
-if(isAdmin){
-let ban=document.createElement("button");
-ban.innerText="Ban";
-ban.onclick=()=>banUser(m.username);
-div.appendChild(ban);
-}
-
-if(m.image){
-let img=document.createElement("img");
-img.src=decrypt(m.image);
-div.appendChild(img);
-}
+div.innerHTML=decrypt(m.message);
 
 chat.appendChild(div);
 chat.scrollTop=chat.scrollHeight;
 }
 
-// ---------------- LOAD ----------------
+/* LOAD */
 async function loadMessages(){
 
-let query=client.from("messages").select("*").order("created_at",{ascending:true}).limit(50);
+let query=client.from("messages").select("*").order("created_at",{ascending:true});
 
 if(privateChatUser){
 query=query.or(`and(username.eq.${username},private_to.eq.${privateChatUser}),and(username.eq.${privateChatUser},private_to.eq.${username})`);
@@ -212,39 +249,38 @@ const {data}=await query;
 
 chat.innerHTML="";
 data.forEach(renderMessage);
+
+document.getElementById("chatHeader").innerText =
+privateChatUser ? privateChatUser : "# "+room;
 }
 
-// ---------------- SEND ----------------
+/* SEND */
 async function sendMessage(){
 
-let text=document.getElementById("message").value;
-const privateTo=privateChatUser;
-
+const text=message.value;
 if(!text) return;
 
 await client.from("messages").insert({
 username,
 message:encrypt(text),
-image:capturedImage?encrypt(capturedImage):null,
 room,
-private_to:privateTo
+private_to:privateChatUser
 });
 
-capturedImage=null;
-document.getElementById("message").value="";
+message.value="";
 }
 
-// ENTER KEY SUPPORT
-document.getElementById("message").addEventListener("keypress",e=>{
+/* ENTER KEY */
+message.addEventListener("keypress",e=>{
 if(e.key==="Enter") sendMessage();
 });
 
-// ---------------- REALTIME ----------------
+/* REALTIME */
 function subscribeMessages(){
 
 if(channel) client.removeChannel(channel);
 
-channel=client.channel("messages-live");
+channel=client.channel("chat");
 
 channel.on("postgres_changes",{
 event:"INSERT",
@@ -255,7 +291,7 @@ renderMessage(payload.new);
 }).subscribe();
 }
 
-// ---------------- ONLINE USERS ----------------
+/* ONLINE USERS */
 async function updateOnline(){
 
 await client.from("online_users").upsert({
@@ -268,42 +304,23 @@ const {data}=await client.from("online_users").select("*");
 const active=data.filter(u=>new Date()-new Date(u.last_seen)<30000);
 
 onlineList.innerHTML=active.map(u=>
-`<div onclick="startPrivate('${u.username}')">${u.username}</div>`
+`<div class="user" onclick="startPrivate('${u.username}')">${u.username}</div>`
 ).join("");
 }
 
 setInterval(updateOnline,5000);
 
+/* PRIVATE CHAT */
 function startPrivate(u){
 privateChatUser=u;
-document.getElementById("privateUser").value=u;
 chat.innerHTML="";
 loadMessages();
 }
 
-// ---------------- ADMIN ----------------
-async function deleteMsg(id){
-await client.from("messages").delete().eq("id",id);
-}
-
-async function banUser(u){
-await client.from("banned_users").insert({username:u});
-alert("User banned");
-}
-
-// ---------------- CAMERA ----------------
-async function startCamera(){
-const stream=await navigator.mediaDevices.getUserMedia({video:true});
-document.getElementById("camera").srcObject=stream;
-}
-
-function capturePhoto(){
-const video=document.getElementById("camera");
-const canvas=document.createElement("canvas");
-canvas.width=200;
-canvas.height=150;
-canvas.getContext("2d").drawImage(video,0,0);
-capturedImage=canvas.toDataURL("image/jpeg",0.5);
+function switchRoom(r){
+room=r;
+privateChatUser=null;
+loadMessages();
 }
 </script>
 
