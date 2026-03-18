@@ -167,6 +167,7 @@ button{
 <input id="signupEmail" placeholder="Email"><br><br>
 <input id="signupUsername" placeholder="Username"><br><br>
 <input id="signupPassword" type="password" placeholder="Password"><br><br>
+  <input type="checkbox" id="agreeRules"> I have read, understood and agree to the <b>Chat Rules & Disclaimer</b> below<br>
 <button onclick="signUp()">Sign Up</button>
 
 <hr>
@@ -251,6 +252,12 @@ catch{return "[encrypted]";}
 
 /* SIGN UP */
 async function signUp(){
+  // ✅ Check if rules are agreed
+  if(!document.getElementById("agreeRules").checked){
+    alert("You must agree to the Chat Rules & Disclaimer before signing up.");
+    return;
+  }
+  
 const email=signupEmail.value;
 const uname=signupUsername.value;
 const pass=signupPassword.value;
