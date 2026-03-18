@@ -370,6 +370,7 @@ function startPrivate(u){
 privateChatUser=u;
 chat.innerHTML="";
 loadMessages();
+unread[u] = 0; 
 }
 
 /* SWITCH ROOM */
@@ -378,6 +379,7 @@ room=r;
 privateChatUser=null;
 chat.innerHTML="";
 loadMessages();
+unread[r] = 0; 
 }
 </script>
 
