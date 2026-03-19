@@ -8,14 +8,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 <style>
-body{
-  margin:60;
-  font-family:Arial;
+/* =================== GENERAL STYLES =================== */
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
   background:#f2f2f5;
-  height:80vh;
+  height:100vh;
   display:flex;
   flex-direction:column;
-  overflow:hidden; /*  prevents whole page scrolling */
+  overflow:hidden;
 }
 
 /* HEADER */
@@ -24,62 +25,73 @@ header{
   color:white;
   padding:12px;
   font-size:18px;
-
   position:fixed;
   top:0;
   left:0;
   right:0;
-  height:40px;
+  height:50px;
   z-index:1000;
-  
 }
 
-/* MAIN LAYOUT */
-#container{
+/* =================== LOGIN/SIGNUP PAGE =================== */
+#loginBox {
+  padding:50px;
+  text-align:center;
+  margin-top:50px; /* below header */
+}
+
+#rulesBox {
+  padding:20px; 
+  max-height:300px; 
+  overflow:auto; 
+  background:#fff; 
+  border:1px solid #ccc; 
+  margin:10px;
+}
+
+/* =================== CHAT LAYOUT =================== */
+#container {
+  display:none; /* hidden until login */
   flex:1;
   display:flex;
-  margin-top:60px; /* same as header height */
+  margin-top:50px; /* below header */
   height:calc(100vh - 50px);
-
 }
 
-/* SIDEBAR */
-#onlineSidebar{
+/* ONLINE USERS */
+#onlineSidebar {
   width:220px;
   background:#e0d9f2;
-  margin-top:0px; /* same as header height */
   border-right:1px solid #ccc;
-  overflow-y:auto; /*  independent scroll */
+  overflow-y:auto;
 }
 
-.user{
+.user {
   padding:10px;
   border-bottom:1px solid #d5c9e5;
   cursor:pointer;
 }
-.user:hover{background:#d5c9e5}
+.user:hover{background:#d5c9e5;}
+.user.unread{font-weight:bold; color:#6a0dad;}
 
 /* CHAT AREA */
-#chatArea{
+#chatArea {
   flex:1;
   display:flex;
   flex-direction:column;
-  height:99%;
+  height:100%;
 }
 
-#chat{
+/* CHAT MESSAGES */
+#chat {
   flex:1;
-  overflow-y:auto; /*  independent scroll */
+  overflow-y:auto;
   padding:10px;
-  padding-bottom:130px;
   display:flex;
   flex-direction:column;
-  
 }
-  
 
-/* MESSAGE BUBBLES */
-.msg{
+.msg {
   max-width:60%;
   padding:8px 10px;
   margin:5px;
@@ -87,28 +99,19 @@ header{
   font-size:14px;
 }
 
-.me{
-  background:#cbb3ff;
-  align-self:flex-end;
-}
-
-.other{
-  background:#fff;
-  align-self:flex-start;
-}
+.me {background:#cbb3ff; align-self:flex-end;}
+.other {background:#fff; align-self:flex-start;}
 
 /* INPUT BAR */
-#controls{
+#controls {
   display:flex;
   padding:10px;
   background:#ddd;
-
   position:sticky;
   bottom:0;
-  
 }
 
-#message{
+#message {
   flex:1;
   padding:10px;
   border-radius:20px;
@@ -116,7 +119,7 @@ header{
   outline:none;
 }
 
-button{
+button {
   margin-left:5px;
   padding:8px 12px;
   border:none;
@@ -125,114 +128,75 @@ button{
   border-radius:6px;
   cursor:pointer;
 }
-button1{
-  margin-left:5px;
-  padding:8px 12px;
-  border:none;
-  color:#6a0dad;
-  border-radius:6px;
-  cursor:pointer;
-  font-size:12px;
-}
-/* LOGIN */
-#loginBox{
-  padding:50px;
-  text-align:center;
-}
 
-.unread{
+/* =================== TYPOGRAPHY =================== */
+#chatHeader {
+  margin-top:0px;
+  padding:10px;
   font-weight:bold;
-  color:#6a0dad;
 }
 
-   
-  
 </style>
-
 </head>
-
 <body>
 
 <header id="chatHeader">Nitkelmu Ftit Chat</header>
 
+<!-- =================== LOGIN / SIGNUP PAGE =================== -->
 <div id="loginBox">
 
-<h2>Nikelmu Ftit Chat</h2> 
+<h2>Nitkelmu Ftit Chat</h2> 
 <h3>Have a chat with a friend!</h3>
-  
 
 <h3>Login</h3>
 <input id="loginUsername" placeholder="Username"><br><br>
 <input id="loginPassword" type="password" placeholder="Password"><br><br>
 <button onclick="login()"><b>Login</b></button><br>
-<button1 onclick="forgotPassword()">Forgot Password?</button1>
+<button onclick="forgotPassword()">Forgot Password?</button>
 
 <hr>
-
-<h3>Don't have an account? Register for free!</h3>
-<h4>Register with your email, choose your unique display name and password, verify and chat!</h4>
 
 <h3>Sign Up</h3>
 <input id="signupEmail" placeholder="Email"><br><br>
 <input id="signupUsername" placeholder="Username"><br><br>
 <input id="signupPassword" type="password" placeholder="Password"><br><br>
-  <input type="checkbox" id="agreeRules"> I have read, understood and agree to the <b>Chat Rules & Disclaimer</b> below.<br>
-<h3> </h3>
-  <button onclick="signUp()"><b>Sign Up</b></button>
+<input type="checkbox" id="agreeRules"> I agree to the <b>Chat Rules & Disclaimer</b><br>
+<button onclick="signUp()"><b>Sign Up</b></button>
 
 <hr>
-  
-<div id="rulesBox" style="padding:20px; max-height:400px; overflow:auto; background:#fff; border:1px solid #ccc; margin:10px;">
+
+<div id="rulesBox">
 <h3>Chat Rules & Disclaimer</h3>
-
-<p><b>1. Respect </b><br>
-Be respectful to all users. Harassment, hate speech, threats, or abusive behavior is strictly prohibited.</p>
-
-<p><b>2. No Illegal Content</b><br>
-Do not share illegal, harmful, or inappropriate content, including explicit material, scams, or malicious links.</p>
-
-<p><b>3. No Spam or Advertising</b><br>
-Spamming, flooding messages, or unauthorized promotions are not allowed.</p>
-
-<p><b>4. Privacy Matters</b><br>
-Do not share personal, sensitive, or confidential information (yours or others).</p>
-
-<p><b>5. Moderation</b><br>
-Admins reserve the right to remove messages, suspend, or ban users who violate the rules.</p>
-
-<p><b>6. No Guarantees</b><br>
-This chat service is provided "as is" without warranties of any kind. We are not responsible for user-generated content.</p>
-
-<p><b>7. Use at Your Own Risk</b><br>
-You are responsible for your interactions and any content you share.</p>
-
-<p><b>8. Data & Security</b><br>
-While encryption may be used, no system is 100% secure. Avoid sharing sensitive information.</p>
-
-<p><b>9. Agreement</b><br>
-By using this chat, you agree to these rules and terms.</p>
-
+<p><b>1. Respect:</b> No harassment, hate speech, threats or abusive behavior.</p>
+<p><b>2. No Illegal Content:</b> Do not share harmful, explicit or malicious content.</p>
+<p><b>3. No Spam:</b> No spamming, flooding, or unauthorized advertising.</p>
+<p><b>4. Privacy:</b> Do not share personal or sensitive information.</p>
+<p><b>5. Moderation:</b> Admins can remove messages or ban users violating rules.</p>
+<p><b>6. No Guarantees:</b> Service is "as is"; not responsible for user-generated content.</p>
+<p><b>7. Use at Your Own Risk:</b> You are responsible for your actions.</p>
+<p><b>8. Data & Security:</b> Encryption may be used but avoid sharing sensitive info.</p>
+<p><b>9. Agreement:</b> Using this chat means you agree to these rules.</p>
 </div>
 
 </div>
 
-<div id="container" style="display:none">
+<!-- =================== CHAT PAGE =================== -->
+<div id="container">
 
-<!-- USERS -->
-<div id="onlineSidebar">
-<div class="user" onclick="switchRoom('general')"># General</div>
-<div id="onlineList"></div>
-</div>
+  <!-- ONLINE USERS -->
+  <div id="onlineSidebar">
+    <div class="user" onclick="switchRoom('general')"># General</div>
+    <div id="onlineList"></div>
+  </div>
 
-<!-- CHAT -->
-<div id="chatArea">
-<div id="chat"></div>
-
-<div id="controls">
-<input id="message" placeholder="Type a message">
-<button onclick="sendMessage()">Send</button>
-</div>
-</div>
+  <!-- CHAT AREA -->
+  <div id="chatArea">
+    <div id="chat"></div>
+    <div id="controls">
+      <input id="message" placeholder="Type a message">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
 </div>
 
@@ -241,257 +205,155 @@ const SUPABASE_URL="https://ajcxjjbwoyugiwsslknw.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqY3hqamJ3b3l1Z2l3c3Nsa253Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0Mjc4NTYsImV4cCI6MjA4OTAwMzg1Nn0.jHYCwncqJf941ae-MNi1fEPgMcUiPW9iUPXRcdLsXU8";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let key="global-secret-key-123";
 let username="";
 let room="general";
 let privateChatUser=null;
 let channel=null;
-
-// Track unread messages
 let unread={};
 
 const chat=document.getElementById("chat");
 const onlineList=document.getElementById("onlineList");
 
-/* ENCRYPT */
-function encrypt(t){return CryptoJS.AES.encrypt(t,key).toString();}
-function decrypt(t){
-try{return CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8)||"[error]";}
-catch{return "[encrypted]";}
-}
+let key=localStorage.getItem("chatKey");
+if(!key){ key=CryptoJS.lib.WordArray.random(16).toString(); localStorage.setItem("chatKey",key); }
 
-/* SIGN UP */
+function encrypt(t){ return CryptoJS.AES.encrypt(t,key).toString(); }
+function decrypt(t){ try{ return CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8)||"[error]"; }catch{return "[encrypted]";} }
+
+/* =================== SIGN UP =================== */
 async function signUp(){
-  // ✅ Check if rules are agreed
   if(!document.getElementById("agreeRules").checked){
-    alert("You must agree to the Chat Rules & Disclaimer before signing up.");
-    return;
+    alert("You must agree to the rules to sign up."); return;
   }
-  
-const email=signupEmail.value;
-const uname=signupUsername.value;
-const pass=signupPassword.value;
-
-await client.auth.signUp({email,password:pass});
-await client.from("profiles").insert({email,username:uname});
-alert("Account created");
+  const email=signupEmail.value;
+  const uname=signupUsername.value;
+  const pass=signupPassword.value;
+  await client.auth.signUp({email,password:pass});
+  await client.from("profiles").insert({email,username:uname});
+  alert("Account created!");
 }
 
-/* LOGIN */
+/* =================== LOGIN =================== */
 async function login(){
-
-const uname=loginUsername.value;
-const pass=loginPassword.value;
-
-const {data:profile}=await client.from("profiles").select("*").eq("username",uname).single();
-
-const {error}=await client.auth.signInWithPassword({
-email:profile.email,
-password:pass
-});
-
-if(error){alert(error.message);return;}
-
-username=uname;
-
-loginBox.style.display="none";
-container.style.display="flex";
-
-loadMessages();
-updateOnline();
-subscribeMessages();
+  const uname=loginUsername.value;
+  const pass=loginPassword.value;
+  const {data:profile}=await client.from("profiles").select("*").eq("username",uname).single();
+  if(!profile){ alert("User not found"); return; }
+  const {error}=await client.auth.signInWithPassword({email:profile.email,password:pass});
+  if(error){ alert(error.message); return; }
+  username=uname;
+  loginBox.style.display="none";
+  container.style.display="flex";
+  loadMessages();
+  updateOnline();
+  subscribeMessages();
 }
 
-/* RENDER */
+/* =================== MESSAGE RENDER =================== */
 function renderMessage(m){
-
-// Check if private chat
-let target = m.private_to ? m.username : m.room;
-
-// If not current open chat/room, increment unread
-if((privateChatUser && m.username !== privateChatUser) || (!privateChatUser && m.room !== room)){
-    if(!unread[target]) unread[target]=0;
-    unread[target]++;
-    updateSidebar();
-    return;
-}
-
-const div=document.createElement("div");
-div.className="msg "+(m.username===username?"me":"other");
-let text = decrypt(m.message);
-
-// Format short date + time
-  let time = formatDateTime(m.created_at); // using helper below
-
-  // Show username ONLY in group chat
+  let target = m.private_to ? m.username : m.room;
+  if((privateChatUser && m.username !== privateChatUser) || (!privateChatUser && m.room !== room)){
+      if(!unread[target]) unread[target]=0;
+      unread[target]++;
+      updateSidebar();
+      return;
+  }
+  const div=document.createElement("div");
+  div.className="msg "+(m.username===username?"me":"other");
+  let text = decrypt(m.message);
+  let time = formatDateTime(m.created_at);
   if(!privateChatUser){
     div.innerHTML = `<span style="font-size:11px;color:#888">${time}</span> <b style="font-size:12px;color:#6a0dad">${m.username}</b><br>${text}`;
-  } else {
-  div.innerHTML = text;
-}
-chat.appendChild(div);
-chat.scrollTop=chat.scrollHeight;
+  } else { div.innerHTML = text; }
+  chat.appendChild(div);
+  chat.scrollTop=chat.scrollHeight;
 }
 
-/* LOAD */
+/* =================== LOAD MESSAGES =================== */
 async function loadMessages(){
-
-let query=client.from("messages").select("*").order("created_at",{ascending:true});
-
-if(privateChatUser){
-query=query.or(`and(username.eq.${username},private_to.eq.${privateChatUser}),and(username.eq.${privateChatUser},private_to.eq.${username})`);
-}else{
-query=query.eq("room",room).is("private_to",null);
+  let query=client.from("messages").select("*").order("created_at",{ascending:true});
+  if(privateChatUser){
+    query=query.or(`and(username.eq.${username},private_to.eq.${privateChatUser}),and(username.eq.${privateChatUser},private_to.eq.${username})`);
+  } else { query=query.eq("room",room).is("private_to",null); }
+  const {data}=await query;
+  chat.innerHTML="";
+  data.forEach(renderMessage);
+  document.getElementById("chatHeader").innerText = privateChatUser ? privateChatUser : "# "+room;
+  if(privateChatUser) unread[privateChatUser]=0; else unread[room]=0;
+  updateSidebar();
 }
 
-const {data}=await query;
-
-chat.innerHTML="";
-data.forEach(renderMessage);
-
-document.getElementById("chatHeader").innerText =
-privateChatUser ? privateChatUser : "# "+room;
-
-// Reset unread
-if(privateChatUser) unread[privateChatUser]=0;
-else unread[room]=0;
-updateSidebar();
-}
-
-/* SEND */
+/* =================== SEND MESSAGE =================== */
 async function sendMessage(){
-const text=message.value;
-if(!text) return;
-
-await client.from("messages").insert({
-username,
-message:encrypt(text),
-room,
-private_to:privateChatUser
-});
-
-message.value="";
+  const text=message.value;
+  if(!text) return;
+  await client.from("messages").insert({username,message:encrypt(text),room,private_to:privateChatUser});
+  message.value="";
 }
 
-/* PASSWORD RECOVERY FEATURE */
-  
-client.auth.onAuthStateChange(async (event, session) => {
-
-  if(event === "PASSWORD_RECOVERY"){
-
-    let newPass = prompt("Enter your new password:");
-
-    if(!newPass) return;
-
-    const { error } = await client.auth.updateUser({
-      password: newPass
-    });
-
-    if(error){
-      alert(error.message);
-    } else {
-      alert("Password updated successfully!");
-    }
-
-  }
-
-});
-  
-/* ENTER KEY */
-message.addEventListener("keypress",e=>{
-if(e.key==="Enter") sendMessage();
-});
-
-/* REALTIME */
+/* =================== REALTIME MESSAGES =================== */
 function subscribeMessages(){
-
-if(channel) client.removeChannel(channel);
-
-channel=client.channel("chat");
-
-channel.on("postgres_changes",{
-event:"INSERT",
-schema:"public",
-table:"messages"
-},payload=>{
-renderMessage(payload.new);
-}).subscribe();
+  if(channel) client.removeChannel(channel);
+  channel=client.channel("chat");
+  channel.on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+    renderMessage(payload.new);
+  }).subscribe();
 }
 
-/* ONLINE USERS */
+/* =================== ONLINE USERS =================== */
 async function updateOnline(){
-
-await client.from("online_users").upsert({
-username,
-last_seen:new Date()
-});
-
-const {data}=await client.from("online_users").select("*");
-
-const active = data
-  .filter(u => new Date() - new Date(u.last_seen) < 30000)
-  .filter(u => u.username !== username); //  REMOVE YOURSELF
-
-onlineList.innerHTML=active.map(u=>{
-let name=u.username;
-return `<div class="user ${unread[name] ? 'unread' : ''}" 
-onclick="startPrivate('${name}')">
-${name}
-</div>`;
-}).join("");
+  await client.from("online_users").upsert({username,last_seen:new Date()});
+  const {data}=await client.from("online_users").select("*");
+  const active=data.filter(u=>new Date()-new Date(u.last_seen)<30000);
+  onlineList.innerHTML=active.map(u=>{
+    let name=u.username;
+    return `<div class="user ${unread[name] ? 'unread' : ''}" onclick="startPrivate('${name}')">${name}</div>`;
+  }).join("");
 }
-
 setInterval(updateOnline,5000);
 
-/* PRIVATE CHAT */
+/* =================== PRIVATE CHAT =================== */
 function startPrivate(u){
-  if(u === username) return; //  BLOCK SELF CHAT
-privateChatUser=u;
-chat.innerHTML="";
-loadMessages();
-unread[u] = 0; 
+  if(u===username) return; // cannot chat with self
+  privateChatUser=u;
+  chat.innerHTML="";
+  loadMessages();
+  unread[u]=0;
 }
 
-/* SWITCH ROOM */
+/* =================== SWITCH ROOM =================== */
 function switchRoom(r){
-room=r;
-privateChatUser=null;
-chat.innerHTML="";
-loadMessages();
-unread[r] = 0; 
+  room=r;
+  privateChatUser=null;
+  chat.innerHTML="";
+  loadMessages();
+  unread[r]=0;
 }
 
-/* GET DATE & TIME */
+/* =================== DATE & TIME =================== */
 function formatDateTime(ts){
-  const date = new Date(ts);
-  const day = String(date.getDate()).padStart(2,'0');
-  const month = String(date.getMonth() + 1).padStart(2,'0');
-  const time = date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  return `${day}/${month} ${time}`; // REMOVES COMA
+  const date=new Date(ts);
+  const day=String(date.getDate()).padStart(2,'0');
+  const month=String(date.getMonth()+1).padStart(2,'0');
+  const time=date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  return `${day}/${month} ${time}`;
 }
 
-  
-/* FORGOT PASSWORD POPUP */
+/* =================== FORGOT PASSWORD =================== */
 async function forgotPassword(){
-
-  let email = prompt("Enter your email:");
-
-  if(!email){
-    alert("Email required");
-    return;
-  }
-
+  let email=prompt("Enter your email:");
+  if(!email){ alert("Email required"); return; }
   const { error } = await client.auth.resetPasswordForEmail(email, {
     redirectTo: "https://www.nitkelmuftit.icu"
   });
-
-  if(error){
-    alert(error.message);
-  } else {
-    alert("Reset email sent. Check your inbox.");
-  }
+  if(error){ alert(error.message); } else { alert("Reset email sent."); }
 }
-  
+
+/* =================== ENTER KEY SEND =================== */
+message.addEventListener("keypress",e=>{
+  if(e.key==="Enter") sendMessage();
+});
+
 </script>
 
 </body>
