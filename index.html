@@ -320,10 +320,13 @@ const div=document.createElement("div");
 div.className="msg "+(m.username===username?"me":"other");
 let text = decrypt(m.message);
 
-// Show username ONLY in group chat
-if(!privateChatUser){
-  div.innerHTML = "<b style='font-size:12px;color:#6a0dad'>" + m.username + "</b><br>" + text;
-}else{
+// Format short date + time
+  let time = formatDateTime(m.created_at); // using helper below
+
+  // Show username ONLY in group chat
+  if(!privateChatUser){
+    div.innerHTML = `<span style="font-size:11px;color:#888">${time}</span> <b style="font-size:12px;color:#6a0dad">${m.username}</b><br>${text}`;
+  } else {
   div.innerHTML = text;
 }
 chat.appendChild(div);
@@ -458,6 +461,16 @@ loadMessages();
 unread[r] = 0; 
 }
 
+/* GET DATE & TIME */
+function formatDateTime(ts){
+  const date = new Date(ts);
+  const day = String(date.getDate()).padStart(2,'0');
+  const month = String(date.getMonth() + 1).padStart(2,'0');
+  const time = date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  return `${day}/${month} ${time}`; // REMOVES COMA
+}
+
+  
 /* FORGOT PASSWORD POPUP */
 async function forgotPassword(){
 
