@@ -207,7 +207,7 @@ Forgot Password?
 </div>
 
 <!-- =================== CHAT PAGE =================== -->
-<div id="container">
+<div id="container" style="display:none;">
 
   <!-- ONLINE USERS -->
   <div id="onlineSidebar">
@@ -239,6 +239,7 @@ let unread={};
 
 const chat=document.getElementById("chat");
 const onlineList=document.getElementById("onlineList");
+const message = document.getElementById("message");
 
 let key=localStorage.getItem("chatKey");
 if(!key){ key=CryptoJS.lib.WordArray.random(16).toString(); localStorage.setItem("chatKey",key); }
@@ -261,8 +262,8 @@ async function signUp(){
 
 /* =================== LOGIN =================== */
 async function login(){
-  const uname=loginUsername.value;
-  const pass=loginPassword.value;
+  const uname=document.getElementById("loginUsername").value;
+  const pass=document.getElementById("loginPassword").value;
   const {data:profile}=await client.from("profiles").select("*").eq("username",uname).single();
   if(!profile){ alert("User not found"); return; }
   const {error}=await client.auth.signInWithPassword({email:profile.email,password:pass});
@@ -380,9 +381,21 @@ async function forgotPassword(){
 }
 
 /* =================== ENTER KEY SEND =================== */
-message.addEventListener("keypress",e=>{
-  if(e.key==="Enter") sendMessage();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const msgInput = document.getElementById("message");
+  if(msgInput){
+    msgInput.addEventListener("keypress", e=>{
+      if(e.key==="Enter") sendMessage();
+    });
+  }
 });
+
+
+
+
+  
+  
 
 </script>
 
