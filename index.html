@@ -8,140 +8,151 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 <style>
-/* =================== GENERAL STYLES =================== */
+
+/* =================== BODY & GLOBAL =================== */
 body {
-  margin:0;
-  font-family: Arial, sans-serif;
-  background:#f2f2f5;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
+  margin:0;                  /* Remove default page margin */
+  font-family: Arial;         /* Set default font */
+  background:#f2f2f5;         /* Light gray background */
+  height:100vh;               /* Full viewport height */
+  display:flex;               /* Use flexbox for vertical layout */
+  flex-direction:column;      /* Stack header, login/chat vertically */
+  overflow:hidden;            /* Prevent page scrolling; chat handles its own scroll */
 }
 
-/* HEADER */
-header{
-  background:#6a0dad;
-  color:white;
-  padding:12px;
-  font-size:18px;
-  position:fixed;
-  top:0;
+/* =================== HEADER =================== */
+header {
+  background:#6a0dad;         /* Purple header background */
+  color:white;                 /* White text */
+  padding:12px;                /* Padding inside header */
+  font-size:18px;              /* Header text size */
+  position:fixed;              /* Fixed at top */
+  top:0;                        /* Stick to top of viewport */
   left:0;
   right:0;
-  height:50px;
-  z-index:1000;
+  height:40px;                 /* Fixed header height */
+  z-index:1000;                /* Ensure header is above other elements */
 }
 
-/* =================== LOGIN/SIGNUP PAGE =================== */
-#loginBox {
-  padding:50px;
-  text-align:center;
-  margin-top:50px; /* below header */
-  height:60%;
-}
-
-#rulesBox {
-  padding:20px; 
-  height:40%;
-  overflow:auto; 
-  background:#fff; 
-  border:1px solid #ccc; 
-  margin:10px;
-}
-
-/* =================== CHAT LAYOUT =================== */
+/* =================== MAIN CONTAINER =================== */
 #container {
-  display:none; /* hidden until login */
-  flex:1;
-  display:flex;
-  margin-top:50px; /* below header */
-  height:calc(100vh - 50px);
+  flex:1;                      /* Fill remaining space below header */
+  display:flex;                /* Layout children horizontally: sidebar + chat */
+  margin-top:60px;             /* Leave space for header (slightly taller than header height) */
+  height:calc(100vh - 50px);   /* Ensure container fits viewport minus header */
 }
 
-/* ONLINE USERS */
+/* =================== ONLINE USERS SIDEBAR =================== */
 #onlineSidebar {
-  width:220px;
-  background:#e0d9f2;
-  border-right:1px solid #ccc;
-  margin-top:50px; /* below header */
-  overflow-y:auto;
+  width:220px;                 /* Sidebar width */
+  background:#e0d9f2;          /* Light purple background */
+  border-right:1px solid #ccc; /* Right border line */
+  overflow-y:auto;             /* Scroll independently if user list exceeds height */
 }
 
 .user {
-  padding:10px;
-  border-bottom:1px solid #d5c9e5;
-  cursor:pointer;
+  padding:10px;                /* Space around each username */
+  border-bottom:1px solid #d5c9e5; /* Divider between users */
+  cursor:pointer;              /* Pointer on hover */
 }
-.user:hover{background:#d5c9e5;}
-.user.unread{font-weight:bold; color:#6a0dad;}
 
-/* CHAT AREA */
+.user:hover {
+  background:#d5c9e5;          /* Highlight on hover */
+}
+
+/* =================== CHAT AREA =================== */
 #chatArea {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  height:100%;
-  margin-top:50px; /* below header */
-
+  flex:1;                      /* Fill remaining horizontal space */
+  display:flex;                /* Flex layout to stack chat + input bar */
+  flex-direction:column;       /* Vertical stacking: messages on top, input at bottom */
+  height:99%;                  /* Slightly less than 100% to avoid scrollbar issues */
 }
 
-/* CHAT MESSAGES */
+/* =================== CHAT SCROLL AREA =================== */
 #chat {
-  flex:1;
-  overflow-y:auto;
-  padding:10px;
-  display:flex;
-  flex-direction:column;
-  padding-bottom:80px; /* ensures last message isn’t hidden */
+  flex:1;                      /* Take up all remaining space in chatArea above input */
+  overflow-y:auto;             /* Scroll when messages exceed visible area */
+  padding:10px;                /* Space inside chat */
+  padding-bottom:80px;         /* Bottom padding to prevent last message from being hidden by input bar */
+  display:flex;                /* Flex layout for messages */
+  flex-direction:column;       /* Stack messages vertically */
 }
 
+/* =================== MESSAGE BUBBLES =================== */
 .msg {
-  max-width:60%;
-  padding:8px 10px;
-  margin:5px;
-  border-radius:10px;
-  font-size:14px;
+  max-width:60%;               /* Messages occupy up to 60% of chat width */
+  padding:8px 10px;            /* Padding inside message bubble */
+  margin:5px;                  /* Margin between messages */
+  border-radius:10px;          /* Rounded corners */
+  font-size:14px;              /* Text size */
 }
 
-.me {background:#cbb3ff; align-self:flex-end;}
-.other {background:#fff; align-self:flex-start;}
+.me {
+  background:#cbb3ff;          /* Purple bubble for own messages */
+  align-self:flex-end;          /* Align right */
+}
 
-/* INPUT BAR */
+.other {
+  background:#fff;             /* White bubble for others */
+  align-self:flex-start;        /* Align left */
+}
+
+/* =================== INPUT BAR =================== */
 #controls {
-  display:flex;
-  padding:10px;
-  background:#ddd;
-  position:sticky;
-  bottom:0;
-  z-index:10; /* make sure it’s above chat */
+  display:flex;                /* Align input + button horizontally */
+  padding:10px;                /* Padding inside container */
+  background:#ddd;             /* Light gray background */
+  position:sticky;             /* Stick to bottom of chatArea */
+  bottom:0;                    /* Stick exactly at bottom */
+  z-index:10;                  /* Make sure input bar is above messages */
 }
 
 #message {
-  flex:1;
-  padding:10px;
-  border-radius:20px;
-  border:1px solid #aaa;
-  outline:none;
+  flex:1;                      /* Expand input to take available space */
+  padding:10px;                /* Padding inside input */
+  border-radius:20px;          /* Rounded input */
+  border:1px solid #aaa;       /* Gray border */
+  outline:none;                /* Remove focus outline */
 }
 
+/* =================== BUTTON STYLING =================== */
 button {
-  margin-left:5px;
-  padding:8px 12px;
-  border:none;
-  background:#6a0dad;
-  color:white;
-  border-radius:6px;
-  cursor:pointer;
+  margin-left:5px;             /* Space between input and button */
+  padding:8px 12px;            /* Button size */
+  border:none;                  /* Remove default border */
+  background:#6a0dad;          /* Purple background */
+  color:white;                  /* White text */
+  border-radius:6px;            /* Rounded corners */
+  cursor:pointer;               /* Pointer on hover */
+}
+
+button1 {
+  margin-left:5px;             
+  padding:8px 12px;             
+  border:none;                  
+  color:#6a0dad;               /* Remove background for forgot password */
+  border-radius:6px;            
+  cursor:pointer;               
+  font-size:12px;              
+}
+
+/* =================== LOGIN BOX =================== */
+#loginBox {
+  padding:50px;                 /* Space inside login page */
+  text-align:center;            /* Center all elements */
 }
 
 /* =================== TYPOGRAPHY =================== */
 #chatHeader {
-  margin-top:0px;
-  padding:10px;
-  font-weight:bold;
+  margin-top:0px;               /* Remove extra margin */
+  padding:10px;                 /* Padding inside header text */
+  font-weight:bold;             /* Bold text */
 }
 
+.unread {
+  font-weight:bold;             /* Make unread user bold */
+  color:#6a0dad;                /* Purple color */
+}
 </style>
 </head>
 <body>
