@@ -383,13 +383,16 @@ async function forgotPassword(){
   
 /* =================== PASSWORD RECOVERY =================== */
   
-client.auth.onAuthStateChange(async (event, session) => {
+window.addEventListener("load", async () => {
 
-  if (event === "PASSWORD_RECOVERY") {
+  const hash = window.location.hash;
+
+  // Check if this is a password recovery link
+  if(hash && hash.includes("type=recovery")){
 
     const newPassword = prompt("Enter your new password:");
 
-    if (!newPassword) {
+    if(!newPassword){
       alert("Password required");
       return;
     }
@@ -398,15 +401,19 @@ client.auth.onAuthStateChange(async (event, session) => {
       password: newPassword
     });
 
-    if (error) {
+    if(error){
       alert(error.message);
     } else {
       alert("Password updated successfully!");
 
-      // Optional: redirect to login cleanly
-      window.location.href = "/";
+      // Clean URL (remove token from address bar)
+      window.location.hash = "";
+
+      // Optional: reload clean
+      window.location.reload();
     }
   }
+
 });
   
 /* =================== ENTER KEY SEND =================== */
