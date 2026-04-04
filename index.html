@@ -145,7 +145,31 @@ button1 {
 }
 
 /* =================== LOGIN BOX =================== */
-#loginBox {
+
+  #authTabs {
+  display:flex;
+  width:300px;
+  margin:0 auto 20px;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+#authTabs button {
+  flex:1;
+  padding:10px;
+  border:none;
+  background:#ddd;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+#authTabs button.active {
+  background:#6a0dad;
+  color:white;
+}
+  
+  
+  #loginBox {
   padding:50px;                 /* Space inside login page */
   text-align:center;            /* Center all elements */
   display:flex;
@@ -189,30 +213,45 @@ button1 {
 
 <header id="chatHeader">Nitkelmu Ftit Chat</header>
 
-<!-- =================== LOGIN / SIGNUP PAGE =================== -->
-<div id="loginBox">
-
 <h1>Nitkelmu Ftit</h1> 
 <h3>Have a chat with a friend!</h3>
 
-<h2>Login</h2>
-<input id="loginUsername" placeholder="Username"><br><br>
-<input id="loginPassword" type="password" placeholder="Password"><br><br>
-<button onclick="login()"><b>Login</b></button><br>
-<button onclick="forgotPassword()" style="background:none;color:#6a0dad;text-decoration:underline;padding:0;border:none;cursor:pointer;font-size:14px;">
-Forgot Password?
-</button>
+ <!-- =================== LOGIN / SIGNUP PAGE =================== --> 
 
-<hr class="divider">
+<div id="loginBox">
 
-<h3>Sign Up</h3>
-<input id="signupEmail" placeholder="Email"><br><br>
-<input id="signupUsername" placeholder="Username"><br><br>
-<input id="signupPassword" type="password" placeholder="Password"><br><br>
-<input type="checkbox" id="agreeRules"> I agree to the <b>Chat Rules & Disclaimer</b><br>
-<button onclick="signUp()"><b>Sign Up</b></button>
+  <!-- Tabs for Login/Sign Up -->
+  <div id="authTabs">
+    <button id="loginTab" class="active" onclick="showLogin()">Login</button>
+    <button id="signupTab" onclick="showSignup()">Sign Up</button>
+  </div>
 
-<hr>
+  <!-- LOGIN FORM -->
+  <div id="loginSection">
+    <h2>Login</h2>
+    <input id="loginUsername" placeholder="Username"><br><br>
+    <input id="loginPassword" type="password" placeholder="Password"><br><br>
+    <button onclick="login()"><b>Login</b></button><br><br>
+
+    <button onclick="forgotPassword()" class="linkBtn">
+      Forgot Password?
+    </button>
+  </div>
+
+  <!-- SIGN UP FORM -->
+  <div id="signupSection" style="display:none;">
+    <h2>Sign Up</h2>
+    <input id="signupEmail" placeholder="Email"><br><br>
+    <input id="signupUsername" placeholder="Username"><br><br>
+    <input id="signupPassword" type="password" placeholder="Password"><br><br>
+
+    <input type="checkbox" id="agreeRules">
+    I agree to the rules<br><br>
+
+    <button onclick="signUp()"><b>Sign Up</b></button>
+  </div>
+
+  <!-- RULES (Always visible at bottom) -->
 
  <div class="rulesContent">
 <h3>Chat Rules & Disclaimer</h3>
@@ -268,6 +307,22 @@ const chat=document.getElementById("chat");
 const onlineList=document.getElementById("onlineList");
 const message = document.getElementById("message");
 
+/* =================== login and signup tabs  =================== */
+ function showLogin(){
+  document.getElementById("loginSection").style.display = "block";
+  document.getElementById("signupSection").style.display = "none";
+
+  document.getElementById("loginTab").classList.add("active");
+  document.getElementById("signupTab").classList.remove("active");
+}
+
+function showSignup(){
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("signupSection").style.display = "block";
+
+  document.getElementById("signupTab").classList.add("active");
+  document.getElementById("loginTab").classList.remove("active");
+} 
 
 /* =================== MSG encryption =================== */
   
