@@ -203,6 +203,7 @@ Forgot Password?
 <p><b>7. Use at Your Own Risk:</b> You are responsible for your actions.</p>
 <p><b>8. Data & Security:</b> Encryption may be used but avoid sharing sensitive info.</p>
 <p><b>9. Agreement:</b> Using this chat means you agree to these rules.</p>
+<p><b>10. Msg Store:</b> General: last 200 msgs. Private: last 50 msgs.</p>  
 </div>
 
 </div>
@@ -242,11 +243,24 @@ const chat=document.getElementById("chat");
 const onlineList=document.getElementById("onlineList");
 const message = document.getElementById("message");
 
-let key=localStorage.getItem("chatKey");
-if(!key){ key=CryptoJS.lib.WordArray.random(16).toString(); localStorage.setItem("chatKey",key); }
 
-function encrypt(t){ return CryptoJS.AES.encrypt(t,key).toString(); }
-function decrypt(t){ try{ return CryptoJS.AES.decrypt(t,key).toString(CryptoJS.enc.Utf8)||"[error]"; }catch{return "[encrypted]";} }
+/* =================== MSG encryption =================== */
+  
+let key = "nitkelmu-secret-key2006";
+
+function encrypt(t){
+  return CryptoJS.AES.encrypt(t, key).toString();
+}
+
+function decrypt(t){
+  try{
+    const bytes = CryptoJS.AES.decrypt(t, key);
+    const text = bytes.toString(CryptoJS.enc.Utf8);
+    return text || "[error]";
+  }catch{
+    return "[encrypted]";
+  }
+}
 
 /* =================== SIGN UP =================== */
 async function signUp(){
