@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nitkelmu Ftit Chat</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -208,11 +209,78 @@ button1 {
   font-weight:bold;             /* Make unread user bold */
   color:#6a0dad;                /* Purple color */
 }
+/* =================== MOBILE =================== */
+@media (max-width: 768px) {
+
+  /* Stack layout vertically */
+  #container {
+    flex-direction: column;
+    margin-top:60px;
+    height:calc(100vh - 60px);
+  }
+
+  /* Hide sidebar by default */
+  #onlineSidebar {
+    display:none;
+    width:100%;
+    height:200px;
+    border-right:none;
+    border-bottom:1px solid #ccc;
+  }
+
+  /* Show sidebar when active */
+  #onlineSidebar.active {
+    display:block;
+  }
+
+  /* Chat full width */
+  #chatArea {
+    width:100%;
+    height:100%;
+  }
+
+  /* Messages smaller */
+  .msg {
+    max-width:80%;
+    font-size:13px;
+  }
+
+  /* Input area */
+  #controls {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+  }
+
+  /* Prevent chat being hidden behind input */
+  #chat {
+    padding-bottom:80px;
+  }
+
+  /* Login box responsive */
+  #loginBox {
+    padding:20px;
+  }
+
+  input {
+    width:90%;
+    max-width:300px;
+  }
+
+  #authTabs {
+    width:100%;
+  }
+
+}
+
 </style>
 </head>
 <body>
 
-<header id="chatHeader">Nitkelmu Ftit Chat</header>
+<header id="chatHeader">Nitkelmu Ftit Chat
+<button id="menuBtn" onclick="toggleSidebar()" style="float:right;">☰</button>
+</header>
 
 <h1>Nitkelmu Ftit</h1> 
 <h3>Have a chat... find a friend!</h3>
@@ -324,7 +392,13 @@ function showSignup(){
   document.getElementById("signupTab").classList.add("active");
   document.getElementById("loginTab").classList.remove("active");
 } 
-
+  
+/* =================== mobile toggle =================== */
+function toggleSidebar(){
+  const sidebar = document.getElementById("onlineSidebar");
+  sidebar.classList.toggle("active");
+}
+  
 /* =================== MSG encryption =================== */
   
 let key = "nitkelmu-secret-key2006";
