@@ -83,7 +83,8 @@ header {
   overflow-y:auto;             /* Scroll when messages exceed visible area */
   padding:10px;                /* Space inside chat */
   padding-bottom:80px;         /* Bottom padding to prevent last message from being hidden by input bar */
-
+  display:flex;                /*  REQUIRED for msg alignment */
+  flex-direction:column;       /* REQUIRED for msg alignment*/
 }
 
 /* =================== MESSAGE BUBBLES =================== */
@@ -93,16 +94,19 @@ header {
   margin:5px;                  /* Margin between messages */
   border-radius:10px;          /* Rounded corners */
   font-size:14px;              /* Text size */
+  word-wrap:break-word; /* prevents overflow */
 }
 
 .me {
   background:#cbb3ff;          /* Purple bubble for own messages */
   align-self:flex-end;          /* Align right */
+  margin-left:auto;
 }
 
 .other {
   background:#fff;             /* White bubble for others */
   align-self:flex-start;        /* Align left */
+  margin-right:auto;
 }
 
 /* =================== INPUT BAR =================== */
@@ -355,7 +359,7 @@ function showSignup(){
 
 /* =================== MSG encryption =================== */
   
-let key = "nitkelmu-secret-key2006";
+let key = "nitkelmu-secret-key-2006";
 
 function encrypt(t){
   return CryptoJS.AES.encrypt(t, key).toString();
